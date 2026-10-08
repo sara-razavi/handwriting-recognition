@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def load_data():
@@ -60,6 +61,12 @@ print("Test size:", len(x_test))
 
 # make sure test set has all the digits
 print("Digits in test set:", np.unique(y_test))
+
+# first model, knn is simple so start with it
+model = KNeighborsClassifier(n_neighbors=3)
+model.fit(x_train, y_train)
+print()
+print("Model trained with", model.n_samples_fit_, "images")
 
 print()
 print("Example image, label is", labels[0])
