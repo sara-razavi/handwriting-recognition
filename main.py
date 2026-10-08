@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
 
 
 def load_data():
@@ -50,6 +51,15 @@ print()
 print("Data shape after flatten:", x.shape)
 print("Min and max value:", x.min(), x.max())
 print("First row of x:", x[0][:10])
+
+# 80% for training, 20% for testing
+x_train, x_test, y_train, y_test = train_test_split(x, labels, test_size=0.2, random_state=1)
+print()
+print("Train size:", len(x_train))
+print("Test size:", len(x_test))
+
+# make sure test set has all the digits
+print("Digits in test set:", np.unique(y_test))
 
 print()
 print("Example image, label is", labels[0])
