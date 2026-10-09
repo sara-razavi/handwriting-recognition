@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
 
 def load_data():
@@ -78,6 +79,18 @@ print("Real     :", y_test[:10])
 first = x_test[0].reshape(8, 8) * 16
 show_digit(first)
 print("Prediction:", predictions[0])
+
+# how many did the model get right
+correct = np.sum(predictions == y_test)
+print()
+print("Correct:", correct, "out of", len(y_test))
+
+accuracy = accuracy_score(y_test, predictions)
+print("Accuracy:", round(accuracy * 100, 2), "%")
+
+# find the wrong ones
+wrong = np.where(predictions != y_test)[0]
+print("Wrong indexes:", wrong)
 
 print()
 print("Example image, label is", labels[0])
