@@ -68,6 +68,17 @@ model.fit(x_train, y_train)
 print()
 print("Model trained with", model.n_samples_fit_, "images")
 
+# predict the test images
+predictions = model.predict(x_test)
+print()
+print("Predicted:", predictions[:10])
+print("Real     :", y_test[:10])
+
+# show the first test image and what the model thinks
+first = x_test[0].reshape(8, 8) * 16
+show_digit(first)
+print("Prediction:", predictions[0])
+
 print()
 print("Example image, label is", labels[0])
 show_digit(images[0])
