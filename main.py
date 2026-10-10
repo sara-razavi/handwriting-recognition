@@ -92,6 +92,29 @@ print("Accuracy:", round(accuracy * 100, 2), "%")
 wrong = np.where(predictions != y_test)[0]
 print("Wrong indexes:", wrong)
 
+# try different k values
+print()
+print("Testing different settings")
+best_k = 3
+best_acc = 0
+for k in [1, 3, 5, 7, 9, 15]:
+    m = KNeighborsClassifier(n_neighbors=k)
+    m.fit(x_train, y_train)
+    acc = accuracy_score(y_test, m.predict(x_test))
+    print("k =", k, "->", round(acc * 100, 2), "%")
+    if acc > best_acc:
+        best_acc = acc
+        best_k = k
+
+print("Best k:", best_k)
+
+# same thing but closer neighbors count more
+for k in [3, 5, 9]:
+    m = KNeighborsClassifier(n_neighbors=k, weights="distance")
+    m.fit(x_train, y_train)
+    acc = accuracy_score(y_test, m.predict(x_test))
+    print("k =", k, "distance weights ->", round(acc * 100, 2), "%")
+
 print()
 print("Example image, label is", labels[0])
 show_digit(images[0])
