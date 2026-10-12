@@ -115,6 +115,32 @@ for k in [3, 5, 9]:
     acc = accuracy_score(y_test, m.predict(x_test))
     print("k =", k, "distance weights ->", round(acc * 100, 2), "%")
 
+# use the best k for the final examples
+best_model = KNeighborsClassifier(n_neighbors=best_k)
+best_model.fit(x_train, y_train)
+best_predictions = best_model.predict(x_test)
+
+
+def show_example(i):
+    img = x_test[i].reshape(8, 8) * 16
+    print()
+    show_digit(img)
+    print("Prediction:", best_predictions[i])
+    print("Real digit:", y_test[i])
+
+
+print()
+print("Example predictions (k =", best_k, ")")
+for i in range(5):
+    show_example(i)
+
+# also look at the ones it got wrong
+wrong_best = np.where(best_predictions != y_test)[0]
+print()
+print("Wrong with best model:", len(wrong_best))
+for i in wrong_best:
+    show_example(i)
+
 print()
 print("Example image, label is", labels[0])
 show_digit(images[0])
