@@ -36,13 +36,45 @@ def show_digit(image):
         print(line)
 
 
-images, labels = load_data()
+def train_model(x_train, y_train, k=3, weights="uniform"):
+    model = KNeighborsClassifier(n_neighbors=k, weights=weights)
+    model.fit(x_train, y_train)
+    return model
+
+
+def get_accuracy(model, x_test, y_test):
+    predictions = model.predict(x_test)
+    return accuracy_score(y_test, predictions)
+
+
+def find_best_k(x_train, y_train, x_test, y_test):
+    best_k = 3
+    best_acc = 0
+    for k in [1, 3, 5, 7, 9, 15]:
+        model = train_model(x_train, y_train, k)
+        acc = get_accuracy(model, x_test, y_test)
+        print("k =", k, "->", round(acc * 100, 2), "%")
+        if acc > best_acc:
+            best_acc = acc
+            best_k = k
+    return best_k
+
+
+def show_example(model, x_test, y_test, i):
+    img = x_test[i].reshape(8, 8) * 16
+    prediction = model.predict(x_test[i].reshape(1, -1))[0]
+    print()
+    show_digit(img)
+    print("Prediction:", prediction)
+    print("Real digit:", y_test[i])
+
 
 print("Handwriting Recognition")
 print("-----------------------")
+
+images, labels = load_data()
 print("Number of images:", len(images))
 print("Image shape:", images[0].shape)
-print("Labels:", np.unique(labels))
 
 # check how many images we have for each digit
 for d in range(10):
@@ -52,95 +84,47 @@ x = prepare_data(images)
 print()
 print("Data shape after flatten:", x.shape)
 print("Min and max value:", x.min(), x.max())
-print("First row of x:", x[0][:10])
 
 # 80% for training, 20% for testing
 x_train, x_test, y_train, y_test = train_test_split(x, labels, test_size=0.2, random_state=1)
-print()
 print("Train size:", len(x_train))
 print("Test size:", len(x_test))
 
-# make sure test set has all the digits
-print("Digits in test set:", np.unique(y_test))
-
 # first model, knn is simple so start with it
-model = KNeighborsClassifier(n_neighbors=3)
-model.fit(x_train, y_train)
-print()
-print("Model trained with", model.n_samples_fit_, "images")
-
-# predict the test images
+model = train_model(x_train, y_train)
 predictions = model.predict(x_test)
 print()
 print("Predicted:", predictions[:10])
 print("Real     :", y_test[:10])
 
-# show the first test image and what the model thinks
-first = x_test[0].reshape(8, 8) * 16
-show_digit(first)
-print("Prediction:", predictions[0])
-
-# how many did the model get right
 correct = np.sum(predictions == y_test)
-print()
 print("Correct:", correct, "out of", len(y_test))
+print("Accuracy:", round(get_accuracy(model, x_test, y_test) * 100, 2), "%")
 
-accuracy = accuracy_score(y_test, predictions)
-print("Accuracy:", round(accuracy * 100, 2), "%")
-
-# find the wrong ones
-wrong = np.where(predictions != y_test)[0]
-print("Wrong indexes:", wrong)
-
-# try different k values
+# try different settings
 print()
 print("Testing different settings")
-best_k = 3
-best_acc = 0
-for k in [1, 3, 5, 7, 9, 15]:
-    m = KNeighborsClassifier(n_neighbors=k)
-    m.fit(x_train, y_train)
-    acc = accuracy_score(y_test, m.predict(x_test))
-    print("k =", k, "->", round(acc * 100, 2), "%")
-    if acc > best_acc:
-        best_acc = acc
-        best_k = k
-
+best_k = find_best_k(x_train, y_train, x_test, y_test)
 print("Best k:", best_k)
 
 # same thing but closer neighbors count more
 for k in [3, 5, 9]:
-    m = KNeighborsClassifier(n_neighbors=k, weights="distance")
-    m.fit(x_train, y_train)
-    acc = accuracy_score(y_test, m.predict(x_test))
+    m = train_model(x_train, y_train, k, "distance")
+    acc = get_accuracy(m, x_test, y_test)
     print("k =", k, "distance weights ->", round(acc * 100, 2), "%")
 
-# use the best k for the final examples
-best_model = KNeighborsClassifier(n_neighbors=best_k)
-best_model.fit(x_train, y_train)
+# final model with the best k
+best_model = train_model(x_train, y_train, best_k)
 best_predictions = best_model.predict(x_test)
-
-
-def show_example(i):
-    img = x_test[i].reshape(8, 8) * 16
-    print()
-    show_digit(img)
-    print("Prediction:", best_predictions[i])
-    print("Real digit:", y_test[i])
-
 
 print()
 print("Example predictions (k =", best_k, ")")
 for i in range(5):
-    show_example(i)
+    show_example(best_model, x_test, y_test, i)
 
 # also look at the ones it got wrong
-wrong_best = np.where(best_predictions != y_test)[0]
+wrong = np.where(best_predictions != y_test)[0]
 print()
-print("Wrong with best model:", len(wrong_best))
-for i in wrong_best:
-    show_example(i)
-
-print()
-print("Example image, label is", labels[0])
-show_digit(images[0])
+print("Wrong with best model:", len(wrong))
+for i in wrong:
+    show_example(best_model, x_test, y_test, i)
